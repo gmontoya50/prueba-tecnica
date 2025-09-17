@@ -11,13 +11,14 @@ El proyecto debe estar construido utilizando las tecnologías oficiales del stac
 
 El proyecto debe implementarse con las siguientes tecnologías:
 
-- **Backend**: Node.js con NestJS y TypeScript
+- **Backend**: Node.js y TypeScript
 - **Base de Datos**: AWS DynamoDB
-- **Frontend**: React con Next.js y TypeScript
+- **Frontend**: React y TypeScript
 - **Testing**:
   - Backend → Jest + Supertest
   - Frontend → React Testing Library + Jest
 - **Control de versiones**: Git (repositorio en GitLab/GitHub)
+- **Estilos**: Material UI (MUI)
 
 ---
 
