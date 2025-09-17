@@ -1,0 +1,23 @@
+# Node
+node_modules/
+**/node_modules/
+
+# Serverless / Build
+.serverless/
+.backend/
+backend/.webpack/
+backend/.serverless/
+backend/.s3/
+frontend/dist/
+
+# Env files
+*.env
+*.env.local
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Misc
+.DS_Store
