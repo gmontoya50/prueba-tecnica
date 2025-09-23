@@ -255,9 +255,7 @@ export default function App() {
                       // data-testid estable para pruebas: permite localizar el botón
                       data-testid={`edit-btn-${todo.id}`}
                       onClick={(e) => {
-                        // Evitar que el click burbujee al ListItemButton
                         e.stopPropagation();
-                        // Abre el diálogo de edición con los datos del item
                         openEdit(todo);
                       }}
                     >
