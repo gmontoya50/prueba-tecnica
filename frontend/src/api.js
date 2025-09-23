@@ -1,7 +1,37 @@
-import axios from "axios";
+import axios from 'axios';
 
-const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL ?? "http://localhost:4000",
+const client = axios.create({
+  baseURL: import.meta.env.VITE_API_URL ?? 'http://localhost:4000',
 });
 
-export default api;
+export async function listTodos() {
+  const { data } = await client.get('/todos');
+  return data;
+}
+
+export async function createTodo(payload) {
+  const { data } = await client.post('/todos', payload);
+  return data;
+}
+
+export async function updateTodoStatus(id, completed) {
+  const { data } = await client.patch(`/todos/${id}`, { completed });
+  return data;
+}
+
+export async function updateTodo(id, payload) {
+  const { data } = await client.patch(`/todos/${id}`, payload);
+  return data;
+}
+
+export async function deleteTodo(id) {
+  await client.delete(`/todos/${id}`);
+}
+
+export default {
+  listTodos,
+  createTodo,
+  updateTodoStatus,
+  updateTodo,
+  deleteTodo,
+};
