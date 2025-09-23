@@ -14,7 +14,7 @@ describe('App', () => {
     render(<App />);
 
     await waitFor(() => {
-      expect(screen.getByRole('heading', { name: /todo list serverless/i })).toBeInTheDocument();
+      expect(screen.getByRole('heading', { name: /todo list/i })).toBeInTheDocument();
     });
   });
 });
