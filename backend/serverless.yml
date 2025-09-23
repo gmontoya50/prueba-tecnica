@@ -63,6 +63,24 @@ functions:
       - httpApi:
           method: post
           path: /todos
+  listTodos:
+    handler: src/handlers/listTodos.handler
+    events:
+      - httpApi:
+          method: get
+          path: /todos
+  updateTodoStatus:
+    handler: src/handlers/updateTodoStatus.handler
+    events:
+      - httpApi:
+          method: patch
+          path: /todos/{id}
+  deleteTodo:
+    handler: src/handlers/deleteTodo.handler
+    events:
+      - httpApi:
+          method: delete
+          path: /todos/{id}
 
 resources:
   Resources:
@@ -109,4 +127,3 @@ custom:
     directory: ./.s3
   dotenv:
     required: false
-
