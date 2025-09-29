@@ -20,3 +20,4 @@
   "include": ["./src", "./types", "./test"],
   "exclude": ["./node_modules", "./.serverless", "./.webpack"]
 }
+ 
