@@ -1,7 +1,7 @@
 {
   "name": "Prueba Tecnica",
   "dockerComposeFile": ["../docker-compose.yml"],
-  "service": "backend",
+  "service": "frontend",
   "runServices": ["dynamodb", "backend", "frontend"],
   "workspaceFolder": "/app",
   "shutdownAction": "stopCompose",

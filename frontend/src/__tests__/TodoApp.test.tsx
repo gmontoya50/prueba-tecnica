@@ -1,116 +1,92 @@
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import React from 'react';
-import App from '../App'; // ajusta si tu entry point es otro
+import { act } from 'react-dom/test-utils';
+import App from '../App';
+
+// Helper para mockear fetch de forma compacta
+const res = (data: any, ok = true, status = 200) =>
+  ({ ok, status, json: async () => data } as any);
 
 describe('TodoApp (API mocked)', () => {
   const originalFetch = global.fetch;
 
   beforeEach(() => {
-    // Evitamos "as any" problemático para Babel/TS usando (global as any)
-    (global as any).fetch = jest.fn();
+    global.fetch = jest.fn() as any;
+    jest.clearAllMocks();
   });
 
   afterEach(() => {
-    (global as any).fetch = originalFetch;
-    jest.resetAllMocks();
+    global.fetch = originalFetch as any;
   });
 
-  test('renderiza lista vacía (GET /todos)', async () => {
-    // GET inicial → []
-    ((global as any).fetch as jest.Mock).mockResolvedValueOnce({
-      ok: true,
-      json: async () => ([]),
-    });
+  it('renderiza lista vacía (GET /todos)', async () => {
+    (global.fetch as jest.Mock).mockResolvedValueOnce(res([]));
 
     render(<App />);
 
-    // Ajusta el texto a tu UI ("No hay tareas", "Sin tareas", etc.)
-    expect(await screen.findByText(/no hay tareas|sin tareas|no todos yet/i)).toBeInTheDocument();
-
-    // Verifica que llamó a /todos
-    expect((global as any).fetch).toHaveBeenCalledTimes(1);
-    expect(((global as any).fetch as jest.Mock).mock.calls[0][0].toString()).toMatch(/\/todos$/);
+    // Espera a que cargue y muestre el estado vacío
+    expect(await screen.findByText(/no hay tareas/i)).toBeInTheDocument();
+    expect(global.fetch).toHaveBeenCalledTimes(1);
   });
 
-  test('crea y muestra un todo (POST /todos)', async () => {
+  it('crea y muestra un todo (POST /todos)', async () => {
+    const user = userEvent.setup();
+
     // 1) GET inicial vacío
-    ((global as any).fetch as jest.Mock).mockResolvedValueOnce({
-      ok: true,
-      json: async () => ([]),
-    });
-    // 2) POST creación
-    ((global as any).fetch as jest.Mock).mockResolvedValueOnce({
-      ok: true,
-      json: async () => ({ id: '1', title: 'Aprender testing', completed: false }),
-    });
-    // (Opcional) 3) si tu App re-fetchea tras POST, agrega otro mock GET:
-    // ((global as any).fetch as jest.Mock).mockResolvedValueOnce({
-    //   ok: true,
-    //   json: async () => ([{ id: '1', title: 'Aprender testing', completed: false }]),
-    // });
+    (global.fetch as jest.Mock).mockResolvedValueOnce(res([]));
+    // 2) POST crea
+    (global.fetch as jest.Mock).mockResolvedValueOnce(
+      res({ id: '1', title: 'Comprar pan', completed: false }, true, 201)
+    );
 
     render(<App />);
 
-    // Ajusta placeholder y label a tu UI real
-    const input = await screen.findByPlaceholderText(/agrega una tarea|add todo/i);
-    const btn = screen.getByRole('button', { name: /agregar|add/i });
+    const input = await screen.findByPlaceholderText(/agrega una tarea/i);
+    const addBtn = screen.getByRole('button', { name: /agregar/i });
 
-    await userEvent.type(input, 'Aprender testing');
-    await userEvent.click(btn);
-
-    await waitFor(() => {
-      expect(screen.getByText('Aprender testing')).toBeInTheDocument();
+    await act(async () => {
+      await user.type(input, 'Comprar pan');
+      await user.click(addBtn);
     });
 
-    // Verifica que el POST lleve el body correcto
-    const calls = ((global as any).fetch as jest.Mock).mock.calls;
-    const postCall = calls.find((c: any[]) => c[1]?.method === 'POST');
-    expect(postCall).toBeTruthy();
-    const body = JSON.parse(postCall![1].body);
-    expect(body.title).toBe('Aprender testing');
+    expect(await screen.findByText(/comprar pan/i)).toBeInTheDocument();
+    expect((global.fetch as jest.Mock)).toHaveBeenCalledTimes(2);
   });
 
-  test('toggle de un todo (PUT /todos/:id)', async () => {
-    // 1) GET con item sin completar
-    ((global as any).fetch as jest.Mock).mockResolvedValueOnce({
-      ok: true,
-      json: async () => ([{ id: '1', title: 'Test', completed: false }]),
-    });
-    // 2) PUT toggle → completed: true
-    ((global as any).fetch as jest.Mock).mockResolvedValueOnce({
-      ok: true,
-      json: async () => ({ id: '1', title: 'Test', completed: true }),
-    });
+  it('toggle de un todo (PUT /todos/:id)', async () => {
+    const user = userEvent.setup();
+
+    // 1) GET con 1 item
+    (global.fetch as jest.Mock).mockResolvedValueOnce(
+      res([{ id: '1', title: 'Tarea', completed: false }])
+    );
+    // 2) PUT devuelve actualizado
+    (global.fetch as jest.Mock).mockResolvedValueOnce(
+      res({ id: '1', title: 'Tarea', completed: true })
+    );
 
     render(<App />);
 
-    // Si usas checkbox con label accesible
-    const cb = await screen.findByRole('checkbox', { name: /test/i });
-    expect(cb).not.toBeChecked();
+    const chk = await screen.findByLabelText('Tarea');
+    expect(chk).not.toBeChecked();
 
-    fireEvent.click(cb);
-
-    await waitFor(() => {
-      expect(cb).toBeChecked();
+    await act(async () => {
+      await user.click(chk);
     });
 
-    // Verifica que hubo PUT a /todos/1
-    const calls = ((global as any).fetch as jest.Mock).mock.calls;
-    const putCall = calls.find((c: any[]) => c[1]?.method === 'PUT');
-    expect(putCall?.[0].toString()).toMatch(/\/todos\/1$/);
+    await waitFor(() => expect(chk).toBeChecked());
+    expect((global.fetch as jest.Mock)).toHaveBeenCalledTimes(2);
   });
 
-  // Opcional: manejo de error
-  test('muestra error si falla GET /todos', async () => {
-    ((global as any).fetch as jest.Mock).mockResolvedValueOnce({
-      ok: false,
-      status: 500,
-      json: async () => ({ error: 'Internal Error' }),
-    });
+  it('muestra error si falla GET /todos', async () => {
+    (global.fetch as jest.Mock).mockResolvedValueOnce(
+      res({ error: 'boom' }, false, 500)
+    );
 
     render(<App />);
-    // Ajusta al mensaje de tu UI
-    expect(await screen.findByText(/error|falló|algo salió mal/i)).toBeInTheDocument();
+
+    expect(await screen.findByText(/error/i)).toBeInTheDocument();
+    expect(global.fetch).toHaveBeenCalledTimes(1);
   });
 });

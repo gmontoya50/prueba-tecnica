@@ -1,39 +1,27 @@
-import { API_BASE } from './config';
+// src/api.ts
+import config from "./config";
 
-export type Todo = {
-  id: string;
-  title: string;
-  description?: string;
-  completed?: boolean;
-};
-
-async function safeJson(res: Response) {
-  try { return await res.json(); } catch { return null; }
-}
-
-async function handle<T>(res: Response): Promise<T> {
+export async function get<T = unknown>(path: string, init?: RequestInit): Promise<T> {
+  const url = `${config.apiUrl}${path.startsWith("/") ? path : `/${path}`}`;
+  const res = await fetch(url, { ...init, headers: { "Content-Type": "application/json", ...(init?.headers || {}) }});
   if (!res.ok) {
-    const data = await safeJson(res);
-    const msg = (data && (data.error || data.message)) || `HTTP ${res.status}`;
-    throw new Error(msg);
+    const text = await res.text().catch(() => "");
+    throw new Error(`GET ${url} → ${res.status} ${res.statusText} ${text}`);
   }
-  return (await res.json()) as T;
+  return res.json() as Promise<T>;
 }
 
-export const api = {
-  list: () => fetch(`${API_BASE}/todos`).then(handle<Todo[]>),
-  create: (title: string) =>
-    fetch(`${API_BASE}/todos`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ title })
-    }).then(handle<Todo>),
-  update: (id: string, patch: Partial<Todo>) =>
-    fetch(`${API_BASE}/todos/${id}`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(patch)
-    }).then(handle<Todo>),
-  remove: (id: string) =>
-    fetch(`${API_BASE}/todos/${id}`, { method: 'DELETE' }).then(handle<{message:string}>),
-};
+export async function post<T = unknown, B = unknown>(path: string, body: B, init?: RequestInit): Promise<T> {
+  const url = `${config.apiUrl}${path.startsWith("/") ? path : `/${path}`}`;
+  const res = await fetch(url, {
+    method: "POST",
+    body: JSON.stringify(body),
+    headers: { "Content-Type": "application/json" },
+    ...init,
+  });
+  if (!res.ok) {
+    const text = await res.text().catch(() => "");
+    throw new Error(`POST ${url} → ${res.status} ${res.statusText} ${text}`);
+  }
+  return res.json() as Promise<T>;
+}
