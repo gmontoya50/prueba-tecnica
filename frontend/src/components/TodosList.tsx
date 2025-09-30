@@ -1,26 +1,11 @@
-import { useEffect, useState } from "react";
-import { fetchTodos, type Todo } from "../api/todos";
+// src/components/TodosList.tsx
+import type { Todo } from "../api/todos";
 
-export default function TodosList() {
-  const [items, setItems] = useState<Todo[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+type Props = {
+  items: Todo[];
+};
 
-  useEffect(() => {
-    (async () => {
-      try {
-        const data = await fetchTodos();
-        setItems(data ?? []);
-      } catch (e: any) {
-        setError(e?.message || "Error cargando todos");
-      } finally {
-        setLoading(false);
-      }
-    })();
-  }, []);
-
-  if (loading) return <p>Cargando…</p>;
-  if (error) return <p style={{ color: "crimson" }}>Error: {error}</p>;
+export default function TodosList({ items }: Props) {
   if (!items.length) return <p>Sin registros.</p>;
 
   return (
