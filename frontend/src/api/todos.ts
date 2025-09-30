@@ -25,7 +25,6 @@ export async function createTodo(title: string): Promise<Todo> {
 }
 
 // Actualizar Todo
-// actualizar un todo
 export async function updateTodo(id: string, data: Partial<Todo>): Promise<Todo> {
   const res = await fetch(`${config.apiUrl}/todos/${id}`, {
     method: "PUT",
@@ -34,4 +33,10 @@ export async function updateTodo(id: string, data: Partial<Todo>): Promise<Todo>
   });
   if (!res.ok) throw new Error("Error al actualizar todo");
   return res.json();
+}
+
+// Eliminar todo
+export async function deleteTodo(id: string): Promise<void> {
+  const res = await fetch(`${config.apiUrl}/todos/${id}`, { method: "DELETE" });
+  if (!res.ok) throw new Error("Error al eliminar todo");
 }

@@ -43,11 +43,13 @@ export default function App() {
           <TodosList
             items={todos}
             onUpdated={(updated) =>
-              setTodos((prev) =>
-                prev.map((t) => (t.id === updated.id ? updated : t))
-              )
+              setTodos((prev) => prev.map((t) => (t.id === updated.id ? updated : t)))
+            }
+            onDeleted={(id) =>
+              setTodos((prev) => prev.filter((t) => t.id !== id))
             }
           />
+
 
         )}
       </main>
