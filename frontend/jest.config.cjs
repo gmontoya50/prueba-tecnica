@@ -7,5 +7,6 @@ module.exports = {
   transform: {
     '^.+\.[tj]sx?$': 'babel-jest'
   },
-  moduleFileExtensions: ['js', 'jsx', 'json']
+  moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json'],
+  testMatch: ['**/__tests__/**/*.test.(ts|tsx|js|jsx)']
 };
