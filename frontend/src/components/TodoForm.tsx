@@ -1,9 +1,10 @@
 import { useState } from "react";
 import { createTodo, type Todo } from "../api/todos";
+import Box from "@mui/material/Box";
+import TextField from "@mui/material/TextField";
+import Button from "@mui/material/Button";
 
-type Props = {
-  onCreated: (newTodo: Todo) => void;
-};
+type Props = { onCreated: (newTodo: Todo) => void };
 
 export default function TodoForm({ onCreated }: Props) {
   const [title, setTitle] = useState("");
@@ -13,13 +14,12 @@ export default function TodoForm({ onCreated }: Props) {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!title.trim()) return;
-
     setLoading(true);
     setError(null);
     try {
       const todo = await createTodo(title.trim());
-      onCreated(todo); // avisamos al padre
-      setTitle(""); // limpiar input
+      onCreated(todo);
+      setTitle("");
     } catch (err: any) {
       setError(err.message || "Error creando todo");
     } finally {
@@ -28,19 +28,20 @@ export default function TodoForm({ onCreated }: Props) {
   }
 
   return (
-    <form onSubmit={handleSubmit} style={{ marginBottom: 20 }}>
-      <input
-        type="text"
-        placeholder="Nuevo todo..."
+    <Box component="form" onSubmit={handleSubmit} sx={{ display: "flex", gap: 1.5, mb: 2 }}>
+      <TextField
+        size="small"
+        label="Nuevo todo"
         value={title}
         onChange={(e) => setTitle(e.target.value)}
         disabled={loading}
-        style={{ padding: 8, marginRight: 8 }}
+        error={!!error}
+        helperText={error || " "}
+        fullWidth
       />
-      <button type="submit" disabled={loading}>
-        {loading ? "Guardando..." : "Agregar"}
-      </button>
-      {error && <div style={{ color: "crimson" }}>{error}</div>}
-    </form>
+      <Button type="submit" variant="contained" disabled={loading}>
+        Agregar
+      </Button>
+    </Box>
   );
 }
