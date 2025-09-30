@@ -40,7 +40,15 @@ export default function App() {
         ) : error ? (
           <p style={{ color: "crimson" }}>Error: {error}</p>
         ) : (
-          <TodosList items={todos} />
+          <TodosList
+            items={todos}
+            onUpdated={(updated) =>
+              setTodos((prev) =>
+                prev.map((t) => (t.id === updated.id ? updated : t))
+              )
+            }
+          />
+
         )}
       </main>
     </div>
