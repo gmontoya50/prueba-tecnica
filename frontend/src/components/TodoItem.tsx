@@ -15,6 +15,7 @@ import DialogTitle from "@mui/material/DialogTitle";
 import DialogContent from "@mui/material/DialogContent";
 import DialogContentText from "@mui/material/DialogContentText";
 import DialogActions from "@mui/material/DialogActions";
+import Box from "@mui/material/Box";
 
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
@@ -98,70 +99,77 @@ export default function TodoItem({ todo, onUpdated, onDeleted }: Props) {
     }
   }
 
+  // Contenedor de acciones con ancho mínimo fijo y layout horizontal
+  const Actions = (
+    <Box
+      sx={{
+        display: "flex",
+        alignItems: "center",
+        gap: 0.5,
+        minWidth: isXs ? 96 : 128,   // evita “salto”/superposición
+        justifyContent: "flex-end",
+      }}
+    >
+      {editing ? (
+        <>
+          <Tooltip title="Guardar">
+            <span>
+              <IconButton size="small" edge="end" onClick={handleSave} disabled={loading}>
+                <SaveIcon fontSize="small" />
+              </IconButton>
+            </span>
+          </Tooltip>
+          <Tooltip title="Cancelar">
+            <IconButton
+              size="small"
+              edge="end"
+              onClick={() => {
+                setEditing(false);
+                setTitle(todo.title);
+              }}
+              disabled={loading}
+            >
+              <CloseIcon fontSize="small" />
+            </IconButton>
+          </Tooltip>
+        </>
+      ) : (
+        <>
+          <Tooltip title="Editar">
+            <IconButton size="small" edge="end" onClick={() => setEditing(true)} disabled={loading}>
+              <EditIcon fontSize="small" />
+            </IconButton>
+          </Tooltip>
+          <Tooltip title="Eliminar">
+            <IconButton size="small" edge="end" onClick={() => setConfirmOpen(true)} disabled={loading}>
+              <DeleteIcon fontSize="small" />
+            </IconButton>
+          </Tooltip>
+        </>
+      )}
+    </Box>
+  );
+
   return (
     <>
       <ListItem
         divider
-        secondaryAction={
-          editing ? (
-            <Stack direction={isXs ? "column" : "row"} spacing={1}>
-              <Tooltip title="Guardar">
-                <span>
-                  <IconButton edge="end" onClick={handleSave} disabled={loading}>
-                    <SaveIcon />
-                  </IconButton>
-                </span>
-              </Tooltip>
-              <Tooltip title="Cancelar">
-                <IconButton
-                  edge="end"
-                  onClick={() => {
-                    setEditing(false);
-                    setTitle(todo.title);
-                  }}
-                  disabled={loading}
-                >
-                  <CloseIcon />
-                </IconButton>
-              </Tooltip>
-            </Stack>
-          ) : (
-            <Stack direction={isXs ? "column" : "row"} spacing={1}>
-              <Tooltip title="Editar">
-                <IconButton edge="end" onClick={() => setEditing(true)} disabled={loading}>
-                  <EditIcon />
-                </IconButton>
-              </Tooltip>
-              <Tooltip title="Eliminar">
-                <IconButton edge="end" onClick={() => setConfirmOpen(true)} disabled={loading}>
-                  <DeleteIcon />
-                </IconButton>
-              </Tooltip>
-            </Stack>
-          )
-        }
+        secondaryAction={Actions}
         sx={{
           alignItems: "flex-start",
           py: isXs ? 0.5 : 1,
           borderLeft: "4px solid",
           borderLeftColor: todo.completed ? "success.main" : "warning.main",
           bgcolor: todo.completed ? "success.light" : "transparent",
-          "&:hover": {
-            bgcolor: todo.completed ? "success.light" : "action.hover",
-          },
+          "&:hover": { bgcolor: todo.completed ? "success.light" : "action.hover" },
         }}
       >
         {editing ? (
-          <TextField
-            size="small"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            disabled={loading}
-            fullWidth
-          />
+          <TextField size="small" value={title} onChange={(e) => setTitle(e.target.value)} disabled={loading} fullWidth />
         ) : (
           <>
             <Checkbox
+              size="small"
               checked={todo.completed}
               onChange={handleToggleCompleted}
               disabled={loading}
@@ -173,10 +181,11 @@ export default function TodoItem({ todo, onUpdated, onDeleted }: Props) {
               secondaryTypographyProps={{ noWrap: false, sx: { color: todo.completed ? "success.dark" : "warning.dark" } }}
               primary={todo.title}
               secondary={todo.completed ? "Completado" : "Pendiente"}
+              sx={{
+                pr: isXs ? 2 : 3, // un poco más de respiro hacia las acciones
+              }}
             />
-            {errorMsg && (
-              <div style={{ color: "crimson", fontSize: 12, marginTop: 6 }}>{errorMsg}</div>
-            )}
+            {errorMsg && <div style={{ color: "crimson", fontSize: 12, marginTop: 6 }}>{errorMsg}</div>}
           </>
         )}
       </ListItem>
@@ -187,9 +196,7 @@ export default function TodoItem({ todo, onUpdated, onDeleted }: Props) {
           <DialogContentText>
             ¿Seguro que quieres eliminar “{todo.title}”? Esta acción no se puede deshacer.
           </DialogContentText>
-          {errorMsg && (
-            <div style={{ color: "crimson", fontSize: 12, marginTop: 8 }}>{errorMsg}</div>
-          )}
+          {errorMsg && <div style={{ color: "crimson", fontSize: 12, marginTop: 8 }}>{errorMsg}</div>}
         </DialogContent>
         <DialogActions>
           <Button onClick={closeDeleteDialog} disabled={deleting}>Cancelar</Button>

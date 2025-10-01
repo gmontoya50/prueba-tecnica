@@ -132,10 +132,18 @@ export default function App() {
             color="primary"
             aria-label="Agregar"
             onClick={() => setOpenAdd(true)}
-            sx={{ position: "fixed", bottom: 24, right: 24, width: 64, height: 64 }}
+            sx={{
+              position: "fixed",
+              right: 24,
+              // más alto en móviles + respeta safe-area de dispositivos sin bordes
+              bottom: { xs: "calc(env(safe-area-inset-bottom) + 96px)", sm: 96 },
+              width: 64,
+              height: 64,
+            }}
           >
             <AddIcon sx={{ fontSize: 32 }} />
           </Fab>
+
         </Tooltip>
 
         {/* Diálogo para crear */}

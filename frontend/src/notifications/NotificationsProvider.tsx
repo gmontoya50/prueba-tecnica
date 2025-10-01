@@ -123,7 +123,7 @@ export const NotificationsProvider: React.FC<React.PropsWithChildren> = ({ child
         autoHideDuration={current?.duration}
         onClose={handleClose}
         TransitionProps={{ onExited: handleExited }}
-        anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+        anchorOrigin={{ vertical: "bottom", horizontal: "left" }}
       >
         <Alert
           onClose={handleClose}
