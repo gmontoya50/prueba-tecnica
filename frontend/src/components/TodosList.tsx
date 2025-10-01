@@ -1,5 +1,6 @@
+// src/components/TodosList.tsx
 import List from "@mui/material/List";
-import type { Todo } from "../api/todos";
+import type { Todo } from "@/api";
 import TodoItem from "./TodoItem";
 
 type Props = {
@@ -14,9 +15,18 @@ export default function TodosList({ items, onUpdated, onDeleted, dense = false }
 
   return (
     <List dense={dense}>
-      {items.map((t) => (
-        <TodoItem key={t.id} todo={t} onUpdated={onUpdated} onDeleted={onDeleted} />
-      ))}
+      {items.map((t) => {
+        // Log de depuración para confirmar IDs
+        console.debug("[TodosList] render id=", t.id);
+        return (
+          <TodoItem
+            key={t.id}
+            todo={t}
+            onUpdated={onUpdated}
+            onDeleted={onDeleted}
+          />
+        );
+      })}
     </List>
   );
 }

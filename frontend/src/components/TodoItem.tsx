@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { updateTodo, deleteTodo, type Todo } from "../api/todos";
+import { updateTodo, deleteTodo, type Todo } from "@/api/todos";
 import ListItem from "@mui/material/ListItem";
 import ListItemText from "@mui/material/ListItemText";
 import IconButton from "@mui/material/IconButton";
@@ -35,7 +35,11 @@ export default function TodoItem({ todo, onUpdated, onDeleted }: Props) {
     setLoading(true);
     setError(null);
     try {
-      const updated = await updateTodo(todo.id, { title: title.trim(), completed: todo.completed });
+      console.debug("[TodoItem] PUT save id=", todo.id);
+      const updated = await updateTodo(todo.id, {
+        title: title.trim(),
+        completed: todo.completed,
+      });
       onUpdated(updated);
       setEditing(false);
     } catch (e: any) {
@@ -50,6 +54,7 @@ export default function TodoItem({ todo, onUpdated, onDeleted }: Props) {
     setLoading(true);
     setError(null);
     try {
+      console.debug("[TodoItem] DELETE id=", todo.id);
       await deleteTodo(todo.id);
       onDeleted(todo.id);
     } catch (e: any) {
@@ -63,7 +68,8 @@ export default function TodoItem({ todo, onUpdated, onDeleted }: Props) {
     setLoading(true);
     setError(null);
     try {
-      const updated = await updateTodo(todo.id, { title: todo.title, completed: checked });
+      console.debug("[TodoItem] PUT toggle id=", todo.id);
+      const updated = await updateTodo(todo.id, { completed: checked });
       onUpdated(updated);
     } catch (e: any) {
       setError(e?.message || "Error actualizando");
