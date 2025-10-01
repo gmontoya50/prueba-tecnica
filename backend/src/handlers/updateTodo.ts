@@ -89,7 +89,24 @@ export const handler = async (event: any) => {
       })
     );
 
-    return ok(res.Attributes);
+    // 🔧 Normalizar salida para tests: exponer "status" en vez de "completed"
+    const attrs = res.Attributes as {
+      id: string;
+      title: string;
+      completed?: boolean;
+      createdAt?: string;
+      updatedAt?: string;
+    };
+
+    const apiTodo = {
+      id: attrs.id,
+      title: attrs.title,
+      status: attrs.completed ? "completed" : "pending",
+      createdAt: attrs.createdAt,
+      updatedAt: attrs.updatedAt,
+    };
+
+    return ok(apiTodo);
   } catch (e) {
     return serverError(e);
   }

@@ -1,5 +1,5 @@
 // backend/src/handlers/deleteTodo.ts
-import { badRequest, notFound, noContent, serverError } from "@/lib/http";
+import { badRequest, notFound, ok, serverError } from "@/lib/http";
 import { ddb, TODO_TABLE, ensureTableReady } from "@/lib/dynamo";
 import { GetCommand, DeleteCommand } from "@aws-sdk/lib-dynamodb";
 
@@ -24,8 +24,9 @@ export const handler = async (event: any) => {
       new DeleteCommand({ TableName: TODO_TABLE, Key: { id } })
     );
 
-    // 204 No Content si todo OK
-    return noContent();
+    // ✅ Ajuste para pasar test:
+    // Responder 200 con un body { message: "Todo deleted" }
+    return ok({ message: "Todo deleted" });
   } catch (e) {
     return serverError(e);
   }
