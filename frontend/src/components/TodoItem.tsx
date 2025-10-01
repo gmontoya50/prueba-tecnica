@@ -63,12 +63,8 @@ export default function TodoItem({ todo, onUpdated, onDeleted }: Props) {
     }
   }
 
-  function openDeleteDialog() {
-    setConfirmOpen(true);
-  }
-  function closeDeleteDialog() {
-    if (!deleting) setConfirmOpen(false);
-  }
+  function openDeleteDialog() { setConfirmOpen(true); }
+  function closeDeleteDialog() { if (!deleting) setConfirmOpen(false); }
 
   async function confirmDelete() {
     setDeleting(true);
@@ -76,7 +72,7 @@ export default function TodoItem({ todo, onUpdated, onDeleted }: Props) {
     try {
       await deleteTodo(todo.id);
       onDeleted(todo.id);
-      success("Tarea eliminada");
+      success("Todo eliminado");
       setConfirmOpen(false);
     } catch (e: any) {
       const msg = e?.message || "Error eliminando";
@@ -88,7 +84,6 @@ export default function TodoItem({ todo, onUpdated, onDeleted }: Props) {
   }
 
   async function handleToggleCompleted(_: React.ChangeEvent<HTMLInputElement>, checked: boolean) {
-    // sin notificación, solo actualizar
     setLoading(true);
     setErrorMsg(null);
     try {
@@ -138,14 +133,23 @@ export default function TodoItem({ todo, onUpdated, onDeleted }: Props) {
                 </IconButton>
               </Tooltip>
               <Tooltip title="Eliminar">
-                <IconButton edge="end" onClick={openDeleteDialog} disabled={loading}>
+                <IconButton edge="end" onClick={() => setConfirmOpen(true)} disabled={loading}>
                   <DeleteIcon />
                 </IconButton>
               </Tooltip>
             </Stack>
           )
         }
-        sx={{ alignItems: "flex-start", py: isXs ? 0.5 : 1 }}
+        sx={{
+          alignItems: "flex-start",
+          py: isXs ? 0.5 : 1,
+          borderLeft: "4px solid",
+          borderLeftColor: todo.completed ? "success.main" : "warning.main",
+          bgcolor: todo.completed ? "success.light" : "transparent",
+          "&:hover": {
+            bgcolor: todo.completed ? "success.light" : "action.hover",
+          },
+        }}
       >
         {editing ? (
           <TextField
@@ -162,12 +166,13 @@ export default function TodoItem({ todo, onUpdated, onDeleted }: Props) {
               onChange={handleToggleCompleted}
               disabled={loading}
               sx={{ mr: 1, mt: isXs ? 0.25 : 0.5 }}
+              color={todo.completed ? "success" : "primary"}
             />
             <ListItemText
               primaryTypographyProps={{ noWrap: false }}
-              secondaryTypographyProps={{ noWrap: false }}
+              secondaryTypographyProps={{ noWrap: false, sx: { color: todo.completed ? "success.dark" : "warning.dark" } }}
               primary={todo.title}
-              secondary={todo.completed ? "✔️ Completado" : "⏳ Pendiente"}
+              secondary={todo.completed ? "Completado" : "Pendiente"}
             />
             {errorMsg && (
               <div style={{ color: "crimson", fontSize: 12, marginTop: 6 }}>{errorMsg}</div>
@@ -176,7 +181,6 @@ export default function TodoItem({ todo, onUpdated, onDeleted }: Props) {
         )}
       </ListItem>
 
-      {/* Dialogo de confirmación para eliminar */}
       <Dialog open={confirmOpen} onClose={closeDeleteDialog}>
         <DialogTitle>Eliminar tarea</DialogTitle>
         <DialogContent>
@@ -188,15 +192,8 @@ export default function TodoItem({ todo, onUpdated, onDeleted }: Props) {
           )}
         </DialogContent>
         <DialogActions>
-          <Button onClick={closeDeleteDialog} disabled={deleting}>
-            Cancelar
-          </Button>
-          <Button
-            onClick={confirmDelete}
-            color="error"
-            variant="contained"
-            disabled={deleting}
-          >
+          <Button onClick={closeDeleteDialog} disabled={deleting}>Cancelar</Button>
+          <Button onClick={confirmDelete} color="error" variant="contained" disabled={deleting}>
             {deleting ? "Eliminando…" : "Eliminar"}
           </Button>
         </DialogActions>

@@ -1,9 +1,7 @@
-// src/App.tsx
 import "./styles.css";
 import { useEffect, useState } from "react";
-import { fetchTodos, type Todo } from "./api/todos";
+import { fetchTodos, type Todo } from "@/api/todos";
 
-// MUI
 import { ThemeProvider, createTheme, useTheme } from "@mui/material/styles";
 import CssBaseline from "@mui/material/CssBaseline";
 import Container from "@mui/material/Container";
@@ -13,19 +11,25 @@ import CircularProgress from "@mui/material/CircularProgress";
 import ToggleButton from "@mui/material/ToggleButton";
 import ToggleButtonGroup from "@mui/material/ToggleButtonGroup";
 import useMediaQuery from "@mui/material/useMediaQuery";
+import Fab from "@mui/material/Fab";
+import Tooltip from "@mui/material/Tooltip";
+
+import AllInboxIcon from "@mui/icons-material/AllInbox";
+import HourglassTopIcon from "@mui/icons-material/HourglassTop";
+import CheckCircleIcon from "@mui/icons-material/CheckCircle";
+import AddIcon from "@mui/icons-material/Add";
 
 import TodosList from "./components/TodosList";
-import TodoForm from "./components/TodoForm";
+import AddTodoDialog from "./components/AddTodoDialog";
 
-const theme = createTheme({
-  palette: { mode: "light" }, // puedes cambiar a "dark" si quieres
-});
+const theme = createTheme({ palette: { mode: "light" } });
 
 export default function App() {
   const [todos, setTodos] = useState<Todo[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [filter, setFilter] = useState<"all" | "pending" | "done">("all");
+  const [openAdd, setOpenAdd] = useState(false);
 
   const muiTheme = useTheme();
   const isXs = useMediaQuery(muiTheme.breakpoints.down("sm"));
@@ -51,48 +55,64 @@ export default function App() {
     <ThemeProvider theme={theme}>
       <CssBaseline />
       <Container maxWidth="sm">
-        <Box component="header" sx={{ py: 3 }}>
-          <Typography variant="h4" component="h1">
-            To-Do List
-          </Typography>
-        </Box>
+        <Box component="header" sx={{ py: 3, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+          <Typography variant="h5" component="h1">To-Do</Typography>
 
-        <Box component="main" sx={{ pb: 4 }}>
-          <TodoForm onCreated={(t) => setTodos((prev) => [...prev, t])} />
-
-          {/* Filtro */}
+          {/* Filtros con iconos y colores */}
           <ToggleButtonGroup
             value={filter}
             exclusive
             onChange={(_, v) => v && setFilter(v)}
             sx={{
-              mb: 2,
-              width: isXs ? "100%" : "auto",
-              display: "flex",
+              "& .MuiToggleButton-root": { p: 1.0, border: "none" },
             }}
           >
-            <ToggleButton value="all" sx={{ flex: isXs ? 1 : undefined }}>
-              Todos
-            </ToggleButton>
-            <ToggleButton value="pending" sx={{ flex: isXs ? 1 : undefined }}>
-              Pendientes
-            </ToggleButton>
-            <ToggleButton value="done" sx={{ flex: isXs ? 1 : undefined }}>
-              Completados
-            </ToggleButton>
-          </ToggleButtonGroup>
-
-          {loading ? (
-            <Box
+            <ToggleButton
+              value="all"
+              aria-label="Todos"
               sx={{
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "center",
-                py: 4,
+                "&.Mui-selected": {
+                  bgcolor: "info.light",
+                  color: "info.contrastText",
+                },
               }}
             >
+              <AllInboxIcon />
+            </ToggleButton>
+
+            <ToggleButton
+              value="pending"
+              aria-label="Pendientes"
+              sx={{
+                "&.Mui-selected": {
+                  bgcolor: "warning.light",
+                  color: "warning.contrastText",
+                },
+              }}
+            >
+              <HourglassTopIcon />
+            </ToggleButton>
+
+            <ToggleButton
+              value="done"
+              aria-label="Completados"
+              sx={{
+                "&.Mui-selected": {
+                  bgcolor: "success.light",
+                  color: "success.contrastText",
+                },
+              }}
+            >
+              <CheckCircleIcon />
+            </ToggleButton>
+          </ToggleButtonGroup>
+        </Box>
+
+        <Box component="main" sx={{ pb: 8 }}>
+          {loading ? (
+            <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center", py: 4 }}>
               <CircularProgress />
-              <Typography sx={{ mt: 2 }}>Cargando todos…</Typography>
+              <Typography sx={{ mt: 2 }}>Cargando…</Typography>
             </Box>
           ) : error ? (
             <Typography color="error">Error: {error}</Typography>
@@ -100,17 +120,30 @@ export default function App() {
             <TodosList
               items={filtered}
               dense={isXs}
-              onUpdated={(u) =>
-                setTodos((prev) =>
-                  prev.map((t) => (t.id === u.id ? u : t))
-                )
-              }
-              onDeleted={(id) =>
-                setTodos((prev) => prev.filter((t) => t.id !== id))
-              }
+              onUpdated={(u) => setTodos((prev) => prev.map((t) => (t.id === u.id ? u : t)))}
+              onDeleted={(id) => setTodos((prev) => prev.filter((t) => t.id !== id))}
             />
           )}
         </Box>
+
+        {/* FAB Agregar */}
+        <Tooltip title="Agregar tarea">
+          <Fab
+            color="primary"
+            aria-label="Agregar"
+            onClick={() => setOpenAdd(true)}
+            sx={{ position: "fixed", bottom: 24, right: 24, width: 64, height: 64 }}
+          >
+            <AddIcon sx={{ fontSize: 32 }} />
+          </Fab>
+        </Tooltip>
+
+        {/* Diálogo para crear */}
+        <AddTodoDialog
+          open={openAdd}
+          onClose={() => setOpenAdd(false)}
+          onCreated={(t) => setTodos((prev) => [t, ...prev])}
+        />
       </Container>
     </ThemeProvider>
   );
