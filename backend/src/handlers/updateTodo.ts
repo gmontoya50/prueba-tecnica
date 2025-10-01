@@ -3,6 +3,14 @@ import { ddb, TODO_TABLE, ensureTableReady } from "../lib/dynamo";
 
 type Resp = { statusCode: number; headers?: Record<string, string>; body: string };
 
+// CORS para todas las respuestas
+const CORS_HEADERS = {
+  "content-type": "application/json",
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers": "Content-Type,Authorization",
+  "Access-Control-Allow-Methods": "GET,POST,PUT,PATCH,DELETE,OPTIONS",
+};
+
 export const handler = async (event: any): Promise<Resp> => {
   await ensureTableReady();
 
@@ -10,8 +18,8 @@ export const handler = async (event: any): Promise<Resp> => {
   if (!id) {
     return {
       statusCode: 400,
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({ error: "Missing id" })
+      headers: CORS_HEADERS,
+      body: JSON.stringify({ error: "Missing id" }),
     };
   }
 
@@ -21,9 +29,17 @@ export const handler = async (event: any): Promise<Resp> => {
   } catch {
     return {
       statusCode: 400,
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({ error: "Invalid JSON" })
+      headers: CORS_HEADERS,
+      body: JSON.stringify({ error: "Invalid JSON" }),
     };
+  }
+
+  // Soporte híbrido: si viene completed:boolean desde el front, mapear a status
+  //   - completed: true  -> status = "completed"
+  //   - completed: false -> status = "pending"
+  //   Si ya viene 'status', se respeta y se valida más abajo.
+  if (typeof body.completed === "boolean" && body.status == null) {
+    body.status = body.completed ? "completed" : "pending";
   }
 
   const now = new Date().toISOString();
@@ -45,8 +61,8 @@ export const handler = async (event: any): Promise<Resp> => {
     if (body.status !== "pending" && body.status !== "completed") {
       return {
         statusCode: 400,
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({ error: "Invalid status (allowed: pending | completed)" })
+        headers: CORS_HEADERS,
+        body: JSON.stringify({ error: "Invalid status (allowed: pending | completed)" }),
       };
     }
     names["#status"] = "status";
@@ -57,8 +73,8 @@ export const handler = async (event: any): Promise<Resp> => {
   if (sets.length === 1) {
     return {
       statusCode: 400,
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({ error: "Nothing to update" })
+      headers: CORS_HEADERS,
+      body: JSON.stringify({ error: "Nothing to update" }),
     };
   }
 
@@ -71,27 +87,27 @@ export const handler = async (event: any): Promise<Resp> => {
         ExpressionAttributeNames: names,
         ExpressionAttributeValues: values,
         ConditionExpression: "attribute_exists(id)",
-        ReturnValues: "ALL_NEW"
+        ReturnValues: "ALL_NEW",
       })
     );
 
     return {
       statusCode: 200,
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify(out.Attributes)
+      headers: CORS_HEADERS,
+      body: JSON.stringify(out.Attributes),
     };
   } catch (err: any) {
     if (err?.name === "ConditionalCheckFailedException") {
       return {
         statusCode: 404,
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({ error: "Todo not found" })
+        headers: CORS_HEADERS,
+        body: JSON.stringify({ error: "Todo not found" }),
       };
     }
     return {
       statusCode: 500,
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({ error: err?.message || "Unexpected error" })
+      headers: CORS_HEADERS,
+      body: JSON.stringify({ error: err?.message || "Unexpected error" }),
     };
   }
 };
