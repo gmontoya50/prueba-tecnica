@@ -36,6 +36,7 @@ async function safeJson(res: Response) {
   try { return await res.json(); } catch { return {}; }
 }
 
+// Listar tareas
 export async function fetchTodos(): Promise<Todo[]> {
   const res = await fetch(`${config.apiUrl}/todos`);
   if (!res.ok) throw new Error(`GET /todos → ${res.status}`);
@@ -43,6 +44,7 @@ export async function fetchTodos(): Promise<Todo[]> {
   return (Array.isArray(data) ? data : []).map(toClient);
 }
 
+// Crear una tarea
 export async function createTodo(title: string): Promise<Todo> {
   const res = await fetch(`${config.apiUrl}/todos`, {
     method: "POST",
@@ -56,6 +58,7 @@ export async function createTodo(title: string): Promise<Todo> {
   return toClient(await res.json());
 }
 
+// Actualizar una tarea
 export async function updateTodo(id: string, data: Partial<Todo>): Promise<Todo> {
   // Unificamos payload: siempre enviar 'status' al backend
   const payload: any = {};
@@ -77,6 +80,7 @@ export async function updateTodo(id: string, data: Partial<Todo>): Promise<Todo>
   return toClient(await res.json());
 }
 
+// Eliminar una tarea
 export async function deleteTodo(id: string): Promise<void> {
   const res = await fetch(`${config.apiUrl}/todos/${id}`, { method: "DELETE" });
   if (!res.ok) {
