@@ -1,113 +1,96 @@
-import { UpdateCommand } from "@aws-sdk/lib-dynamodb";
-import { ddb, TODO_TABLE, ensureTableReady } from "../lib/dynamo";
+// backend/src/handlers/updateTodo.ts
+import { ok, badRequest, notFound, serverError } from "@/lib/http";
+import { ddb, TODO_TABLE, ensureTableReady } from "@/lib/dynamo";
+import { GetCommand, UpdateCommand } from "@aws-sdk/lib-dynamodb";
 
-type Resp = { statusCode: number; headers?: Record<string, string>; body: string };
-
-// CORS para todas las respuestas
-const CORS_HEADERS = {
-  "content-type": "application/json",
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "Content-Type,Authorization",
-  "Access-Control-Allow-Methods": "GET,POST,PUT,PATCH,DELETE,OPTIONS",
+type Patch = {
+  title?: unknown;
+  completed?: unknown;
+  status?: unknown; // opcional: "pending" | "completed" → mapeado a completed:boolean
 };
 
-export const handler = async (event: any): Promise<Resp> => {
-  await ensureTableReady();
-
-  const id = event?.pathParameters?.id as string | undefined;
-  if (!id) {
-    return {
-      statusCode: 400,
-      headers: CORS_HEADERS,
-      body: JSON.stringify({ error: "Missing id" }),
-    };
-  }
-
-  let body: any = {};
+export const handler = async (event: any) => {
   try {
-    body = typeof event.body === "string" ? JSON.parse(event.body) : event.body || {};
-  } catch {
-    return {
-      statusCode: 400,
-      headers: CORS_HEADERS,
-      body: JSON.stringify({ error: "Invalid JSON" }),
-    };
-  }
+    const id = event.pathParameters?.id as string | undefined;
+    if (!id) return badRequest("id is required");
 
-  // Soporte híbrido: si viene completed:boolean desde el front, mapear a status
-  //   - completed: true  -> status = "completed"
-  //   - completed: false -> status = "pending"
-  //   Si ya viene 'status', se respeta y se valida más abajo.
-  if (typeof body.completed === "boolean" && body.status == null) {
-    body.status = body.completed ? "completed" : "pending";
-  }
+    await ensureTableReady(); // no-op en prod, útil en local
 
-  const now = new Date().toISOString();
-  const sets: string[] = ["#updatedAt = :updatedAt"];
-  const names: Record<string, string> = { "#updatedAt": "updatedAt" };
-  const values: Record<string, any> = { ":updatedAt": now };
-
-  if (body.title) {
-    names["#title"] = "title";
-    values[":title"] = body.title;
-    sets.push("#title = :title");
-  }
-  if (body.description) {
-    names["#description"] = "description";
-    values[":description"] = body.description;
-    sets.push("#description = :description");
-  }
-  if (body.status) {
-    if (body.status !== "pending" && body.status !== "completed") {
-      return {
-        statusCode: 400,
-        headers: CORS_HEADERS,
-        body: JSON.stringify({ error: "Invalid status (allowed: pending | completed)" }),
-      };
+    // Parseo seguro del body
+    let data: Patch = {};
+    try {
+      data = event.body ? JSON.parse(event.body) : {};
+    } catch {
+      return badRequest("Invalid JSON body");
     }
-    names["#status"] = "status";
-    values[":status"] = body.status;
-    sets.push("#status = :status");
-  }
 
-  if (sets.length === 1) {
-    return {
-      statusCode: 400,
-      headers: CORS_HEADERS,
-      body: JSON.stringify({ error: "Nothing to update" }),
-    };
-  }
+    // Normalización: permitir `status` → `completed`
+    if (typeof data.status === "string") {
+      const s = data.status.toLowerCase().trim();
+      if (s !== "pending" && s !== "completed") {
+        return badRequest('status must be "pending" or "completed"');
+      }
+      data.completed = s === "completed";
+    }
 
-  try {
-    const out = await ddb.send(
+    // Validaciones de campos
+    const hasTitle = Object.prototype.hasOwnProperty.call(data, "title");
+    const hasCompleted = Object.prototype.hasOwnProperty.call(data, "completed");
+
+    if (!hasTitle && !hasCompleted) {
+      return badRequest("Nothing to update. Provide title and/or completed");
+    }
+    if (hasTitle) {
+      if (typeof data.title !== "string" || data.title.trim().length === 0) {
+        return badRequest("title must be a non-empty string");
+      }
+    }
+    if (hasCompleted) {
+      if (typeof data.completed !== "boolean") {
+        return badRequest("completed must be a boolean");
+      }
+    }
+
+    // Verificar existencia (para responder 404)
+    const existing = await ddb.send(
+      new GetCommand({ TableName: TODO_TABLE, Key: { id } })
+    );
+    if (!existing.Item) {
+      return notFound("todo not found");
+    }
+
+    // Construir UpdateExpression dinámico
+    const expr: string[] = [];
+    const names: Record<string, string> = {};
+    const values: Record<string, any> = {};
+
+    if (hasTitle) {
+      expr.push("#t = :t");
+      names["#t"] = "title";
+      values[":t"] = (data.title as string).trim();
+    }
+    if (hasCompleted) {
+      expr.push("#c = :c");
+      names["#c"] = "completed";
+      values[":c"] = data.completed;
+    }
+    expr.push("#u = :u"); // updatedAt siempre
+    names["#u"] = "updatedAt";
+    values[":u"] = new Date().toISOString();
+
+    const res = await ddb.send(
       new UpdateCommand({
         TableName: TODO_TABLE,
         Key: { id },
-        UpdateExpression: `SET ${sets.join(", ")}`,
+        UpdateExpression: "SET " + expr.join(", "),
         ExpressionAttributeNames: names,
         ExpressionAttributeValues: values,
-        ConditionExpression: "attribute_exists(id)",
         ReturnValues: "ALL_NEW",
       })
     );
 
-    return {
-      statusCode: 200,
-      headers: CORS_HEADERS,
-      body: JSON.stringify(out.Attributes),
-    };
-  } catch (err: any) {
-    if (err?.name === "ConditionalCheckFailedException") {
-      return {
-        statusCode: 404,
-        headers: CORS_HEADERS,
-        body: JSON.stringify({ error: "Todo not found" }),
-      };
-    }
-    return {
-      statusCode: 500,
-      headers: CORS_HEADERS,
-      body: JSON.stringify({ error: err?.message || "Unexpected error" }),
-    };
+    return ok(res.Attributes);
+  } catch (e) {
+    return serverError(e);
   }
 };

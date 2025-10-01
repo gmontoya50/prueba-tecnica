@@ -1,85 +1,61 @@
-import { randomUUID } from "crypto";
+// backend/src/handlers/createTodo.ts
+import { created, badRequest, serverError } from "@/lib/http";
+import { ddb, TODO_TABLE, ensureTableReady } from "@/lib/dynamo";
 import { PutCommand } from "@aws-sdk/lib-dynamodb";
-import { ddb, TODO_TABLE, ensureTableReady } from "../lib/dynamo";
-import { badRequest, created } from "../lib/http";
-import type { APIGatewayProxyEventV2, APIGatewayProxyResultV2 } from "aws-lambda";
+import { randomUUID } from "node:crypto";
 
-type TodoStatus = "pending" | "completed";
-interface CreateTodoBody {
-  title?: string;
-  description?: string;
-  status?: TodoStatus;
-}
+type Body = {
+  title?: unknown;
+  status?: unknown;    // opcional: "pending" | "completed"
+  completed?: unknown; // opcional: boolean (si no usas status)
+};
 
-export const handler = async (
-  event: APIGatewayProxyEventV2
-): Promise<APIGatewayProxyResultV2> => {
-  // Asegura la tabla en entorno local (DynamoDB Local)
-  await ensureTableReady();
-
-  // Parseo robusto del body
-  let body: CreateTodoBody = {};
+export const handler = async (event: any) => {
   try {
-    body =
-      typeof event.body === "string"
-        ? (JSON.parse(event.body) as CreateTodoBody)
-        : ((event.body as unknown) as CreateTodoBody) || {};
-  } catch {
-    return {
-      ...badRequest("Invalid JSON"),
-      headers: { "content-type": "application/json" }
-    };
-  }
+    await ensureTableReady(); // no-op en prod, útil en local
 
-  // Validaciones mínimas
-  if (!body.title || typeof body.title !== "string" || body.title.trim() === "") {
-    return {
-      ...badRequest("Title is required (non-empty string)"),
-      headers: { "content-type": "application/json" }
-    };
-  }
-  if (body.status && body.status !== "pending" && body.status !== "completed") {
-    return {
-      ...badRequest("Invalid status (allowed: pending | completed)"),
-      headers: { "content-type": "application/json" }
-    };
-  }
+    // Parseo seguro del body
+    let data: Body = {};
+    try {
+      data = event.body ? JSON.parse(event.body) : {};
+    } catch {
+      return badRequest("Invalid JSON body");
+    }
 
-  const now = new Date().toISOString();
-  const item = {
-    id: randomUUID(),
-    title: body.title.trim(),
-    description: typeof body.description === "string" ? body.description : "",
-    status: (body.status || "pending") as TodoStatus,
-    createdAt: now,
-    updatedAt: now
-  };
+    // Validación de title
+    if (typeof data.title !== "string" || data.title.trim().length === 0) {
+      return badRequest("title is required");
+    }
+    const title = data.title.trim();
 
-  try {
-    await ddb.send(
-      new PutCommand({
-        TableName: TODO_TABLE,
-        Item: item,
-        // Evita overwrite accidental (no debería ocurrir con UUID)
-        ConditionExpression: "attribute_not_exists(id)"
-      })
-    );
-  } catch (err: any) {
-    // Si la tabla no existiera por alguna razón, este catch captura el error
-    // y expone un 500 con mensaje útil para diagnóstico local.
-    const message =
-      err?.name === "ResourceNotFoundException"
-        ? "DynamoDB table not found. Check TODO_TABLE and local Dynamo endpoint."
-        : err?.message || "Unexpected error";
-    return {
-      statusCode: 500,
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({ error: message })
+    // Normalización: permitir status "pending|completed" o completed:boolean
+    let completed = false;
+    if (typeof data.status === "string") {
+      const s = data.status.toLowerCase().trim();
+      if (s !== "pending" && s !== "completed") {
+        return badRequest('status must be "pending" or "completed"');
+      }
+      completed = s === "completed";
+    } else if (typeof data.completed === "boolean") {
+      completed = data.completed;
+    }
+
+    // Construir item
+    const now = new Date().toISOString();
+    const item = {
+      id: randomUUID(),
+      title,
+      completed,
+      createdAt: now,
+      updatedAt: now,
     };
-  }
 
-  return {
-    ...created(item),
-    headers: { "content-type": "application/json" }
-  };
+    // Guardar en DynamoDB
+    await ddb.send(new PutCommand({ TableName: TODO_TABLE, Item: item }));
+
+    // 201 Created
+    return created(item);
+  } catch (e) {
+    return serverError(e);
+  }
 };

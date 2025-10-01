@@ -1,35 +1,25 @@
+// backend/src/handlers/getTodo.ts
+import { ok, badRequest, notFound, serverError } from "@/lib/http";
+import { ddb, TODO_TABLE, ensureTableReady } from "@/lib/dynamo";
 import { GetCommand } from "@aws-sdk/lib-dynamodb";
-import { ddb, TODO_TABLE, ensureTableReady } from "../lib/dynamo";
 
-type Resp = { statusCode: number; headers?: Record<string, string>; body: string };
+export const handler = async (event: any) => {
+  try {
+    const id = event.pathParameters?.id as string | undefined;
+    if (!id) return badRequest("id is required");
 
-export const handler = async (event: any): Promise<Resp> => {
-  await ensureTableReady();
+    await ensureTableReady(); // no-op en prod, útil en local
 
-  const id = event?.pathParameters?.id as string | undefined;
-  if (!id) {
-    return {
-      statusCode: 400,
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({ error: "Missing id" })
-    };
+    const res = await ddb.send(
+      new GetCommand({ TableName: TODO_TABLE, Key: { id } })
+    );
+
+    if (!res.Item) {
+      return notFound("todo not found");
+    }
+
+    return ok(res.Item);
+  } catch (e) {
+    return serverError(e);
   }
-
-  const out = await ddb.send(
-    new GetCommand({ TableName: TODO_TABLE, Key: { id } })
-  );
-
-  if (!out.Item) {
-    return {
-      statusCode: 404,
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({ error: "Todo not found" })
-    };
-  }
-
-  return {
-    statusCode: 200,
-    headers: { "content-type": "application/json" },
-    body: JSON.stringify(out.Item)
-  };
 };

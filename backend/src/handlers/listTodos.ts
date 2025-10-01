@@ -1,24 +1,20 @@
+// backend/src/handlers/listTodos.ts
+import { ok, serverError } from "@/lib/http";
+import { ddb, TODO_TABLE, ensureTableReady } from "@/lib/dynamo";
 import { ScanCommand } from "@aws-sdk/lib-dynamodb";
-import { ddb, TODO_TABLE, ensureTableReady } from "../lib/dynamo";
 
-type Resp = { statusCode: number; headers?: Record<string, string>; body: string };
+export const handler = async () => {
+  try {
+    await ensureTableReady(); // no-op en prod, útil en local
 
-export const handler = async (): Promise<Resp> => {
-  await ensureTableReady();
+    const res = await ddb.send(
+      new ScanCommand({ TableName: TODO_TABLE })
+    );
 
-  const out = await ddb.send(new ScanCommand({ TableName: TODO_TABLE }));
-  const items = (out.Items ?? []) as Array<Record<string, any>>;
-
-  // Orden opcional por updatedAt DESC si existe
-  items.sort((a, b) => {
-    const A = a.updatedAt ?? "";
-    const B = b.updatedAt ?? "";
-    return A > B ? -1 : A < B ? 1 : 0;
-  });
-
-  return {
-    statusCode: 200,
-    headers: { "content-type": "application/json" },
-    body: JSON.stringify(items)
-  };
+    // Garantiza siempre un array
+    const items = (res.Items as any[]) ?? [];
+    return ok(items);
+  } catch (e) {
+    return serverError(e);
+  }
 };
