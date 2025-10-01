@@ -6,16 +6,18 @@ import path from "node:path";
 export default defineConfig({
   plugins: [react()],
   resolve: {
-    alias: {
-      "@": path.resolve(__dirname, "./src"),
-    },
+  alias: {
+    "@": path.resolve(__dirname, "./src"),
+    "@/api": path.resolve(__dirname, "./src/api/todos.ts"),
+    "@/notifications": path.resolve(__dirname, "./src/notifications"),
   },
+},
   server: {
-    host: true,       // ya lo tenías (o '0.0.0.0')
+    host: true,       // (o '0.0.0.0')
     port: 3000,
     proxy: {
       "/api": {
-        target: "http://localhost:4000", // tu backend offline
+        target: "http://localhost:4000", // backend offline
         changeOrigin: true,
         secure: false,
       },

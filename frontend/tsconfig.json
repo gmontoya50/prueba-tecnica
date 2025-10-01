@@ -17,7 +17,11 @@
     "noUncheckedIndexedAccess": false,
 
     "baseUrl": "src",
-    "paths": { "@/*": ["*"] }
+    "paths": {
+      "@/*": ["*"],
+      "@/api": ["api/todos.ts"],
+      "@/notifications/*": ["notifications/*"]
+    }
   },
   "include": ["src"],
   "exclude": ["node_modules", "dist"]
