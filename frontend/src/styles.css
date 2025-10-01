@@ -1,13 +1,65 @@
 :root {
+  /* Paleta base (light) */
+  --bg: #f9fafb;
+  --bg-grad-0: #f1f5f9;
+  --bg-grad-1: #f9fafb;
+  --text: #111827;
+  --muted: #4b5563;
+  --card: #ffffff;
+  --card-border: #e5e7eb;
+
+  --badge-bg: #e0e7ff;
+  --badge-fg: #3730a3;
+
+  --btn-secondary-bg: #f3f4f6;
+  --btn-secondary-fg: #111827;
+
+  --success-bg: #dcfce7;
+  --success-fg: #166534;
+  --success-border: #bbf7d0;
+
+  --error-bg: #fee2e2;
+  --error-fg: #991b1b;
+  --error-border: #fecaca;
+}
+
+/* Modo oscuro activado cuando el html/body tenga data-theme="dark" */
+[data-theme="dark"] {
+  --bg: #0b0f14;
+  --bg-grad-0: #0e141c;
+  --bg-grad-1: #0b0f14;
+  --text: #e5e7eb;
+  --muted: #9aa4b2;
+  --card: #111821;
+  --card-border: #1f2937;
+
+  --badge-bg: #1f2937;
+  --badge-fg: #c7d2fe;
+
+  --btn-secondary-bg: #1f2937;
+  --btn-secondary-fg: #e5e7eb;
+
+  --success-bg: #0f2a1b;
+  --success-fg: #86efac;
+  --success-border: #14532d;
+
+  --error-bg: #2a0f12;
+  --error-fg: #fca5a5;
+  --error-border: #7f1d1d;
+}
+
+/* Estilos globales usando variables */
+:root {
   font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-  color: #111827;
-  background-color: #f9fafb;
+  color: var(--text);
+  background-color: var(--bg);
 }
 
 body {
   margin: 0;
-  background: linear-gradient(180deg, #f1f5f9 0%, #f9fafb 100%);
+  background: linear-gradient(180deg, var(--bg-grad-0) 0%, var(--bg-grad-1) 100%);
   min-height: 100vh;
+  color: var(--text);
 }
 
 main {
@@ -19,14 +71,16 @@ main {
 h1 {
   margin-bottom: 1rem;
   text-align: center;
+  color: var(--text);
 }
 
 .todo-card {
-  background: white;
+  background: var(--card);
   border-radius: 12px;
   box-shadow: 0 10px 30px -15px rgba(15, 23, 42, 0.45);
   padding: 1.75rem;
   margin-bottom: 1.5rem;
+  border: 1px solid var(--card-border);
 }
 
 .todo-card header {
@@ -39,11 +93,12 @@ h1 {
 .todo-card header h2 {
   margin: 0;
   font-size: 1.35rem;
+  color: var(--text);
 }
 
 .todo-card p {
   margin: 0.75rem 0 0;
-  color: #4b5563;
+  color: var(--muted);
 }
 
 .todo-card footer {
@@ -73,8 +128,8 @@ button.primary {
 }
 
 button.secondary {
-  background: #f3f4f6;
-  color: #111827;
+  background: var(--btn-secondary-bg);
+  color: var(--btn-secondary-fg);
 }
 
 button.danger {
@@ -88,17 +143,19 @@ button:hover {
 }
 
 form.todo-form {
-  background: white;
+  background: var(--card);
   border-radius: 12px;
   padding: 1.75rem;
   margin-bottom: 2rem;
   box-shadow: 0 15px 35px -20px rgba(15, 23, 42, 0.5);
+  border: 1px solid var(--card-border);
 }
 
 form.todo-form label {
   display: block;
   font-weight: 600;
   margin-bottom: 0.4rem;
+  color: var(--text);
 }
 
 form.todo-form input,
@@ -107,18 +164,20 @@ form.todo-form select {
   width: 100%;
   padding: 0.7rem 0.85rem;
   border-radius: 8px;
-  border: 1px solid #e5e7eb;
+  border: 1px solid var(--card-border);
   font-size: 0.95rem;
   margin-bottom: 1rem;
   box-sizing: border-box;
+  background: var(--bg);
+  color: var(--text);
 }
 
 .badge {
   display: inline-flex;
   align-items: center;
   gap: 0.35rem;
-  background: #e0e7ff;
-  color: #3730a3;
+  background: var(--badge-bg);
+  color: var(--badge-fg);
   border-radius: 999px;
   padding: 0.2rem 0.8rem;
   font-size: 0.8rem;
@@ -126,23 +185,23 @@ form.todo-form select {
 
 .empty-state {
   text-align: center;
-  color: #6b7280;
+  color: var(--muted);
 }
 
 .error-banner {
-  background: #fee2e2;
-  color: #991b1b;
+  background: var(--error-bg);
+  color: var(--error-fg);
   border-radius: 12px;
   padding: 1rem;
   margin-bottom: 1.5rem;
-  border: 1px solid #fecaca;
+  border: 1px solid var(--error-border);
 }
 
 .success-banner {
-  background: #dcfce7;
-  color: #166534;
+  background: var(--success-bg);
+  color: var(--success-fg);
   border-radius: 12px;
   padding: 1rem;
   margin-bottom: 1.5rem;
-  border: 1px solid #bbf7d0;
+  border: 1px solid var(--success-border);
 }

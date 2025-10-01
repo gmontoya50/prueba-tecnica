@@ -11,7 +11,7 @@ type Props = {
 };
 
 export default function TodosList({ items, onUpdated, onDeleted, dense = false }: Props) {
-  if (!items.length) return <p>Sin registros.</p>;
+  if (!items.length) return <p>No hay tareas.</p>;
 
   return (
     <List dense={dense}>
