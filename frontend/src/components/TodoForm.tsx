@@ -33,10 +33,10 @@ const TodoForm: React.FC<Props> = ({ onCreate, onCreated, disabled }) => {
 
       setTitle("");
       onCreated?.(created);
-      success("Todo agregado con éxito");
+      success("Tarea agregada con éxito");
     } catch (e) {
       console.error(e);
-      error("No se pudo agregar el Todo");
+      error("No se pudo agregar la tarea");
     } finally {
       setLoading(false);
     }
