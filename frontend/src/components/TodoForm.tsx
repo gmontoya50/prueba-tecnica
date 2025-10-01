@@ -12,20 +12,26 @@ export default function TodoForm({ onCreated }: Props) {
   const [error, setError] = useState<string | null>(null);
 
   async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    if (!title.trim()) return;
-    setLoading(true);
-    setError(null);
-    try {
-      const todo = await createTodo(title.trim());
-      onCreated(todo);
-      setTitle("");
-    } catch (err: any) {
-      setError(err.message || "Error creando todo");
-    } finally {
-      setLoading(false);
-    }
+  e.preventDefault();
+
+  if (!title.trim()) {
+    setError("Ingresa un título para el To-Do"); // 👈 mensaje claro
+    return;
   }
+
+  setLoading(true);
+  setError(null);
+  try {
+    const todo = await createTodo(title.trim());
+    onCreated(todo);
+    setTitle("");
+  } catch (err: any) {
+    setError(err.message || "Error creando todo");
+  } finally {
+    setLoading(false);
+  }
+}
+
 
   return (
     <Box component="form" onSubmit={handleSubmit} sx={{ display: "flex", gap: 1.5, mb: 2 }}>

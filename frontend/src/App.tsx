@@ -15,7 +15,7 @@ import TodosList from "./components/TodosList";
 import TodoForm from "./components/TodoForm";
 
 const theme = createTheme({
-  palette: { mode: "light" }, // si luego quieres dark: "dark"
+  palette: { mode: "light" }, // dark
 });
 
 export default function App() {
@@ -41,7 +41,7 @@ export default function App() {
       <CssBaseline />
       <Container maxWidth="sm">
         <Box component="header" sx={{ py: 3 }}>
-          <Typography variant="h4" component="h1">Todos</Typography>
+          <Typography variant="h4" component="h1">To-Do's</Typography>
         </Box>
 
         <Box component="main" sx={{ pb: 4 }}>
