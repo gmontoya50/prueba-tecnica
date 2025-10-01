@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { fetchTodos, type Todo } from "./api/todos";
 
 // MUI
-import { ThemeProvider, createTheme } from "@mui/material/styles";
+import { ThemeProvider, createTheme, useTheme } from "@mui/material/styles";
 import CssBaseline from "@mui/material/CssBaseline";
 import Container from "@mui/material/Container";
 import Typography from "@mui/material/Typography";
@@ -12,6 +12,7 @@ import Box from "@mui/material/Box";
 import CircularProgress from "@mui/material/CircularProgress";
 import ToggleButton from "@mui/material/ToggleButton";
 import ToggleButtonGroup from "@mui/material/ToggleButtonGroup";
+import useMediaQuery from "@mui/material/useMediaQuery";
 
 import TodosList from "./components/TodosList";
 import TodoForm from "./components/TodoForm";
@@ -25,6 +26,9 @@ export default function App() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [filter, setFilter] = useState<"all" | "pending" | "done">("all");
+
+  const muiTheme = useTheme();
+  const isXs = useMediaQuery(muiTheme.breakpoints.down("sm"));
 
   useEffect(() => {
     (async () => {
@@ -49,7 +53,7 @@ export default function App() {
       <Container maxWidth="sm">
         <Box component="header" sx={{ py: 3 }}>
           <Typography variant="h4" component="h1">
-            Todos
+            To-Do List
           </Typography>
         </Box>
 
@@ -61,11 +65,21 @@ export default function App() {
             value={filter}
             exclusive
             onChange={(_, v) => v && setFilter(v)}
-            sx={{ mb: 2 }}
+            sx={{
+              mb: 2,
+              width: isXs ? "100%" : "auto",
+              display: "flex",
+            }}
           >
-            <ToggleButton value="all">Todos</ToggleButton>
-            <ToggleButton value="pending">Pendientes</ToggleButton>
-            <ToggleButton value="done">Completados</ToggleButton>
+            <ToggleButton value="all" sx={{ flex: isXs ? 1 : undefined }}>
+              Todos
+            </ToggleButton>
+            <ToggleButton value="pending" sx={{ flex: isXs ? 1 : undefined }}>
+              Pendientes
+            </ToggleButton>
+            <ToggleButton value="done" sx={{ flex: isXs ? 1 : undefined }}>
+              Completados
+            </ToggleButton>
           </ToggleButtonGroup>
 
           {loading ? (
@@ -85,6 +99,7 @@ export default function App() {
           ) : (
             <TodosList
               items={filtered}
+              dense={isXs}
               onUpdated={(u) =>
                 setTodos((prev) =>
                   prev.map((t) => (t.id === u.id ? u : t))

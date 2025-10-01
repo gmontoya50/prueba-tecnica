@@ -6,12 +6,14 @@ type Props = {
   items: Todo[];
   onUpdated: (t: Todo) => void;
   onDeleted: (id: string) => void;
+  dense?: boolean;
 };
 
-export default function TodosList({ items, onUpdated, onDeleted }: Props) {
+export default function TodosList({ items, onUpdated, onDeleted, dense = false }: Props) {
   if (!items.length) return <p>Sin registros.</p>;
+
   return (
-    <List>
+    <List dense={dense}>
       {items.map((t) => (
         <TodoItem key={t.id} todo={t} onUpdated={onUpdated} onDeleted={onDeleted} />
       ))}

@@ -7,6 +7,8 @@ import TextField from "@mui/material/TextField";
 import Stack from "@mui/material/Stack";
 import Tooltip from "@mui/material/Tooltip";
 import Checkbox from "@mui/material/Checkbox";
+import useMediaQuery from "@mui/material/useMediaQuery";
+import { useTheme } from "@mui/material/styles";
 
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
@@ -23,14 +25,17 @@ export default function TodoItem({ todo, onUpdated, onDeleted }: Props) {
   const [editing, setEditing] = useState(false);
   const [title, setTitle] = useState(todo.title);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null); // ✅ agregado
+  const [error, setError] = useState<string | null>(null);
+
+  const theme = useTheme();
+  const isXs = useMediaQuery(theme.breakpoints.down("sm"));
 
   async function handleSave() {
     if (!title.trim()) return;
     setLoading(true);
     setError(null);
     try {
-      const updated = await updateTodo(todo.id, { title: title.trim(), completed: todo.completed }); // ✅ enviar payload completo por si el backend requiere PUT completo
+      const updated = await updateTodo(todo.id, { title: title.trim(), completed: todo.completed });
       onUpdated(updated);
       setEditing(false);
     } catch (e: any) {
@@ -54,7 +59,6 @@ export default function TodoItem({ todo, onUpdated, onDeleted }: Props) {
     }
   }
 
-  // ✅ toggle: usa el 'checked' que entrega MUI y envía título + completed
   async function handleToggleCompleted(_: React.ChangeEvent<HTMLInputElement>, checked: boolean) {
     setLoading(true);
     setError(null);
@@ -73,7 +77,7 @@ export default function TodoItem({ todo, onUpdated, onDeleted }: Props) {
       divider
       secondaryAction={
         editing ? (
-          <Stack direction="row" spacing={1}>
+          <Stack direction={isXs ? "column" : "row"} spacing={1}>
             <Tooltip title="Guardar">
               <span>
                 <IconButton edge="end" onClick={handleSave} disabled={loading}>
@@ -82,13 +86,20 @@ export default function TodoItem({ todo, onUpdated, onDeleted }: Props) {
               </span>
             </Tooltip>
             <Tooltip title="Cancelar">
-              <IconButton edge="end" onClick={() => { setEditing(false); setTitle(todo.title); }} disabled={loading}>
+              <IconButton
+                edge="end"
+                onClick={() => {
+                  setEditing(false);
+                  setTitle(todo.title);
+                }}
+                disabled={loading}
+              >
                 <CloseIcon />
               </IconButton>
             </Tooltip>
           </Stack>
         ) : (
-          <Stack direction="row" spacing={1}>
+          <Stack direction={isXs ? "column" : "row"} spacing={1}>
             <Tooltip title="Editar">
               <IconButton edge="end" onClick={() => setEditing(true)} disabled={loading}>
                 <EditIcon />
@@ -102,6 +113,10 @@ export default function TodoItem({ todo, onUpdated, onDeleted }: Props) {
           </Stack>
         )
       }
+      sx={{
+        alignItems: "flex-start",
+        py: isXs ? 0.5 : 1,
+      }}
     >
       {editing ? (
         <TextField
@@ -115,15 +130,19 @@ export default function TodoItem({ todo, onUpdated, onDeleted }: Props) {
         <>
           <Checkbox
             checked={todo.completed}
-            onChange={handleToggleCompleted} // ✅ ahora manda el checked real
+            onChange={handleToggleCompleted}
             disabled={loading}
-            sx={{ mr: 1 }}
+            sx={{ mr: 1, mt: isXs ? 0.25 : 0.5 }}
           />
           <ListItemText
+            primaryTypographyProps={{ noWrap: false }}
+            secondaryTypographyProps={{ noWrap: false }}
             primary={todo.title}
             secondary={todo.completed ? "✔️ Completado" : "⏳ Pendiente"}
           />
-          {error && <div style={{ color: "crimson", fontSize: 12, marginTop: 6 }}>{error}</div>}
+          {error && (
+            <div style={{ color: "crimson", fontSize: 12, marginTop: 6 }}>{error}</div>
+          )}
         </>
       )}
     </ListItem>
