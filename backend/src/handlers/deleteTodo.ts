@@ -24,7 +24,7 @@ export const handler = async (event: any) => {
       new DeleteCommand({ TableName: TODO_TABLE, Key: { id } })
     );
 
-    // ✅ Ajuste para pasar test:
+    // Ajuste para pasar test:
     // Responder 200 con un body { message: "Todo deleted" }
     return ok({ message: "Todo deleted" });
   } catch (e) {

@@ -89,7 +89,7 @@ export const handler = async (event: any) => {
       })
     );
 
-    // 🔧 Normalizar salida para tests: exponer "status" en vez de "completed"
+    // Normalizar salida para tests: exponer "status" en vez de "completed"
     const attrs = res.Attributes as {
       id: string;
       title: string;

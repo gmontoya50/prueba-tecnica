@@ -24,7 +24,7 @@ export const notFound = (message = "Not Found") =>
   json(404, { error: message });
 
 export const serverError = (e: unknown) => {
-  // Para la prueba puedes incluir el detalle, pero en prod no se recomienda
+  // no incluir detalle en prod
   return json(500, {
     error: "Internal Error",
     detail: e instanceof Error ? e.message : String(e),
