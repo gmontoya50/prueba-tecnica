@@ -5,13 +5,13 @@ type ResponseHeaders = Record<string, string>;
 export function success<T>(statusCode: number, body: T): APIGatewayProxyResultV2<string> {
   const headers: ResponseHeaders = {
     'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Credentials': 'true'
+    'Access-Control-Allow-Credentials': 'true',
   };
 
   return {
     statusCode,
     headers,
-    body: JSON.stringify(body)
+    body: JSON.stringify(body),
   };
 }
 

@@ -63,6 +63,36 @@ functions:
       - httpApi:
           method: post
           path: /todos
+  listTodos:
+    handler: src/handlers/listTodos.handler
+    events:
+      - httpApi:
+          method: get
+          path: /todos
+  getTodo:
+    handler: src/handlers/getTodo.handler
+    events:
+      - httpApi:
+          method: get
+          path: /todos/{id}
+  updateTodo:
+    handler: src/handlers/updateTodo.handler
+    events:
+      - httpApi:
+          method: put
+          path: /todos/{id}
+  deleteTodo:
+    handler: src/handlers/deleteTodo.handler
+    events:
+      - httpApi:
+          method: delete
+          path: /todos/{id}
+  uploadUrl:
+    handler: src/handlers/uploadUrl.handler
+    events:
+      - httpApi:
+          method: post
+          path: /todos/attachments/url
 
 resources:
   Resources:
@@ -77,6 +107,9 @@ resources:
           - AttributeName: id
             KeyType: HASH
         BillingMode: PAY_PER_REQUEST
+        TimeToLiveSpecification:
+          Enabled: true
+          AttributeName: ttl
     AttachmentsBucket:
       Type: AWS::S3::Bucket
       Properties:
@@ -109,4 +142,3 @@ custom:
     directory: ./.s3
   dotenv:
     required: false
-

@@ -8,25 +8,28 @@ module.exports = {
   target: 'node',
   mode: slsw.lib.webpack.isLocal ? 'development' : 'production',
   devtool: 'source-map',
-  externals: [nodeExternals()],
+  externals: [nodeExternals({ allowlist: [/^zod($|\/)/] })],
   module: {
     rules: [
       {
         test: /\.[jt]s$/,
         exclude: /node_modules/,
         use: {
-          loader: 'babel-loader'
-        }
-      }
-    ]
+          loader: 'babel-loader',
+        },
+      },
+    ],
   },
   resolve: {
-    extensions: ['.ts', '.js']
+    extensions: ['.ts', '.js'],
+    alias: {
+      '@': path.resolve(__dirname, 'src'),
+      '@lib': path.resolve(__dirname, 'src/lib'),
+    },
   },
   output: {
     libraryTarget: 'commonjs2',
     path: path.join(__dirname, '.webpack'),
-    filename: '[name].js'
-  }
+    filename: '[name].js',
+  },
 };
-
