@@ -87,12 +87,6 @@ functions:
       - httpApi:
           method: delete
           path: /todos/{id}
-  uploadUrl:
-    handler: src/handlers/uploadUrl.handler
-    events:
-      - httpApi:
-          method: post
-          path: /todos/attachments/url
 
 resources:
   Resources:

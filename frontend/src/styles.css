@@ -1,148 +1,75 @@
 :root {
-  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-  color: #111827;
-  background-color: #f9fafb;
+  font-family: 'Montserrat', 'Open Sans', sans-serif;
 }
 
 body {
   margin: 0;
-  background: linear-gradient(180deg, #f1f5f9 0%, #f9fafb 100%);
   min-height: 100vh;
+  background-color: #eef0ff;
 }
 
-main {
-  max-width: 960px;
-  margin: 0 auto;
-  padding: 2rem 1.5rem 4rem;
+.page-background {
+  min-height: 100dvh;
 }
 
-h1 {
-  margin-bottom: 1rem;
-  text-align: center;
+.page-background-transition {
+  transition: all 0.5ms ease-in-out;
 }
 
-.todo-card {
-  background: white;
-  border-radius: 12px;
-  box-shadow: 0 10px 30px -15px rgba(15, 23, 42, 0.45);
-  padding: 1.75rem;
-  margin-bottom: 1.5rem;
+.page-background--light {
+  background: linear-gradient(
+    180deg,
+    rgba(141, 108, 252, 0.9) 0%,
+    rgba(93, 155, 255, 0.86) 44%,
+    #eef0ff 44%,
+    #eef0ff 100%
+  );
 }
 
-.todo-card header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 1rem;
+.page-background--dark {
+  background: linear-gradient(
+    180deg,
+    rgba(28, 27, 48, 0.96) 0%,
+    rgba(28, 27, 48, 0.94) 44%,
+    #141329 44%,
+    #141329 100%
+  );
 }
 
-.todo-card header h2 {
-  margin: 0;
-  font-size: 1.35rem;
+.hero-background--light {
+  background: linear-gradient(135deg, rgba(141, 108, 252, 0.95), rgba(93, 155, 255, 0.85));
 }
 
-.todo-card p {
-  margin: 0.75rem 0 0;
-  color: #4b5563;
+.hero-background--dark {
+  background: linear-gradient(135deg, rgba(37, 37, 60, 0.95), rgba(62, 63, 95, 0.85));
 }
 
-.todo-card footer {
-  margin-top: 1rem;
-  display: flex;
-  gap: 0.75rem;
-  flex-wrap: wrap;
+.hero-background-animate {
+  animation: hero-background-fade-in 0.2s ease;
 }
 
-button {
-  cursor: pointer;
-  border: none;
-  border-radius: 8px;
-  padding: 0.6rem 1.1rem;
-  font-size: 0.95rem;
-  font-weight: 600;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  transition: transform 0.15s ease, box-shadow 0.15s ease;
+@keyframes hero-background-fade-in {
+  0% {
+    opacity: 0;
+    transform: translateY(-100px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
-button.primary {
-  background-color: #2563eb;
-  color: white;
-  box-shadow: 0 8px 20px -10px rgba(37, 99, 235, 0.6);
-}
-
-button.secondary {
-  background: #f3f4f6;
-  color: #111827;
-}
-
-button.danger {
-  background: #ef4444;
-  color: white;
-  box-shadow: 0 8px 20px -10px rgba(239, 68, 68, 0.6);
-}
-
-button:hover {
-  transform: translateY(-1px);
-}
-
-form.todo-form {
-  background: white;
-  border-radius: 12px;
-  padding: 1.75rem;
-  margin-bottom: 2rem;
-  box-shadow: 0 15px 35px -20px rgba(15, 23, 42, 0.5);
-}
-
-form.todo-form label {
+.todo-title {
   display: block;
-  font-weight: 600;
-  margin-bottom: 0.4rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-form.todo-form input,
-form.todo-form textarea,
-form.todo-form select {
-  width: 100%;
-  padding: 0.7rem 0.85rem;
-  border-radius: 8px;
-  border: 1px solid #e5e7eb;
-  font-size: 0.95rem;
-  margin-bottom: 1rem;
-  box-sizing: border-box;
-}
-
-.badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.35rem;
-  background: #e0e7ff;
-  color: #3730a3;
-  border-radius: 999px;
-  padding: 0.2rem 0.8rem;
-  font-size: 0.8rem;
-}
-
-.empty-state {
-  text-align: center;
-  color: #6b7280;
-}
-
-.error-banner {
-  background: #fee2e2;
-  color: #991b1b;
-  border-radius: 12px;
-  padding: 1rem;
-  margin-bottom: 1.5rem;
-  border: 1px solid #fecaca;
-}
-
-.success-banner {
-  background: #dcfce7;
-  color: #166534;
-  border-radius: 12px;
-  padding: 1rem;
-  margin-bottom: 1.5rem;
-  border: 1px solid #bbf7d0;
+.todo-description {
+  display: -webkit-box;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
 }

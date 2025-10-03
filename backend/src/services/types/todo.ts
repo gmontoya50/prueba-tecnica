@@ -2,20 +2,17 @@ export interface CreateTodoInput {
   title: string;
   description?: string;
   completed?: boolean;
-  attachmentKey?: string | null;
 }
 export interface UpdateTodoInput {
   title?: string;
   description?: string;
   completed?: boolean;
-  attachmentKey?: string | null;
 }
 export interface Todo {
   id: string;
   title: string;
   description: string;
   completed: boolean;
-  attachmentKey: string | null;
   createdAt: string;
   updatedAt: string;
   deletedAt?: string;

@@ -2,6 +2,7 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './App';
 import './styles.css';
+import { ThemeProviderContext } from './context/theme/themeContex';
 
 const container = document.getElementById('root');
 
@@ -11,6 +12,8 @@ if (!container) {
 
 ReactDOM.createRoot(container).render(
   <React.StrictMode>
-    <App />
+    <ThemeProviderContext>
+      <App />
+    </ThemeProviderContext>
   </React.StrictMode>
 );

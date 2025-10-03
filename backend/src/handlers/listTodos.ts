@@ -8,7 +8,8 @@ const encodeCursor = (key?: { id: string }) =>
   key ? Buffer.from(JSON.stringify(key)).toString('base64') : undefined;
 
 const listTodos = async (event: APIGatewayProxyEventV2) => {
-  const { limit, cursor } = listTodosQuerySchema.parse(event.queryStringParameters);
+  const { limit, cursor } = listTodosQuerySchema.parse(event.queryStringParameters ?? {});
+
   const service = new TodosService();
   const { data, nextPage } = await service.listTodo({
     params: { limit, cursor },

@@ -18,7 +18,6 @@ import {
   Todo,
   UpdateTodoArgs,
 } from './types/todo';
-import { createUploadUrl } from '@/lib/s3';
 
 export class TodosService {
   async createTodo({ body }: CreateTodoArgs) {
@@ -30,7 +29,7 @@ export class TodosService {
       title: body.title,
       description: body.description ?? '',
       completed: body.completed ?? false,
-      attachmentKey: body.attachmentKey ?? null,
+      // attachmentKey: body.attachmentKey ?? null,
       createdAt: now,
       updatedAt: now,
     };
@@ -105,15 +104,19 @@ export class TodosService {
       TableName: TABLE_NAME,
       Key: { id: params.id },
       UpdateExpression:
-        'set title = :title, #description = :description, completed = :completed, attachmentKey = :attachmentKey, updatedAt = :updatedAt',
+        'set title = :title, #description = :description, completed = :completed, updatedAt = :updatedAt',
       ExpressionAttributeNames: {
         '#description': 'description',
       },
       ExpressionAttributeValues: {
         ':title': body.title ?? data?.title,
-        ':description': body.description ?? data?.description,
+        ':description':
+          body.description && body.description.length > 0 ? body.description : data?.description,
         ':completed': body.completed ?? data?.completed,
-        ':attachmentKey': body.attachmentKey ?? data?.attachmentKey,
+        // ':attachmentKey':
+        //   body.attachmentKey && body.attachmentKey.length > 0
+        //     ? body.attachmentKey
+        //     : data?.attachmentKey,
         ':updatedAt': now,
       },
       ConditionExpression: 'attribute_exists(id) AND attribute_not_exists(deletedAt)',
@@ -149,16 +152,5 @@ export class TodosService {
     const dbRes = await docClient.send(tableInput);
 
     return { data: dbRes.Attributes };
-  }
-  async getAttachmentUploadUrl({
-    fileName,
-    contentType,
-  }: {
-    fileName: string;
-    contentType: string;
-  }) {
-    const key = `attachments/${v4()}-${fileName}`;
-    const uploadUrl = await createUploadUrl(key, contentType);
-    return { uploadUrl, key };
   }
 }

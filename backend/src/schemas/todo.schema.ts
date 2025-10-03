@@ -16,10 +16,10 @@ const parseJsonBody = <T extends z.ZodTypeAny>(inner: T) =>
 
 const parseOptionalJsonBody = <T extends z.ZodTypeAny>(inner: T) =>
   z
-    .string()
-    .optional()
+    .union([z.string(), z.null(), z.undefined()])
     .transform((raw, ctx) => {
-      if (!raw || raw.trim() === '') return undefined;
+      if (raw == null) return undefined;
+      if (raw.trim() === '') return undefined;
       try {
         return JSON.parse(raw);
       } catch {
@@ -34,8 +34,8 @@ const idParamSchema = z.object({
 });
 
 const todoBodySchema = z.object({
-  title: z.string().trim().min(1, 'title is required').max(30, 'title is too large'),
-  description: z.string().max(500, 'description is too large').default(''),
+  title: z.string().trim().min(1, 'title is required').max(300, 'title is too large'),
+  description: z.string().max(2000, 'description is too large').default(''),
   completed: z.boolean().default(false),
   attachmentKey: z.string().nullable().default(null),
 });
@@ -75,12 +75,9 @@ const listTodosQuerySchema = z.object({
     }),
 });
 
-const urlRequestSchema = parseJsonBody(
-  z.object({
-    fileName: z.string().min(1),
-    contentType: z.string().min(1),
-  })
-);
+// const urlRequestSchema =  z.object({
+//     fileName: z.string().min(1),
+//   })
 
 export {
   idParamSchema,
@@ -88,5 +85,5 @@ export {
   updateTodoPutSchema,
   deleteTodoBodySchema,
   listTodosQuerySchema,
-  urlRequestSchema,
+  // urlRequestSchema,
 };
