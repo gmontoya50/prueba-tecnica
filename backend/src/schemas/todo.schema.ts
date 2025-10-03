@@ -75,9 +75,6 @@ const listTodosQuerySchema = z.object({
     }),
 });
 
-// const urlRequestSchema =  z.object({
-//     fileName: z.string().min(1),
-//   })
 
 export {
   idParamSchema,
@@ -85,5 +82,4 @@ export {
   updateTodoPutSchema,
   deleteTodoBodySchema,
   listTodosQuerySchema,
-  // urlRequestSchema,
 };

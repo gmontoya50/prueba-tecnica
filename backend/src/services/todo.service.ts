@@ -29,7 +29,6 @@ export class TodosService {
       title: body.title,
       description: body.description ?? '',
       completed: body.completed ?? false,
-      // attachmentKey: body.attachmentKey ?? null,
       createdAt: now,
       updatedAt: now,
     };
@@ -113,10 +112,6 @@ export class TodosService {
         ':description':
           body.description && body.description.length > 0 ? body.description : data?.description,
         ':completed': body.completed ?? data?.completed,
-        // ':attachmentKey':
-        //   body.attachmentKey && body.attachmentKey.length > 0
-        //     ? body.attachmentKey
-        //     : data?.attachmentKey,
         ':updatedAt': now,
       },
       ConditionExpression: 'attribute_exists(id) AND attribute_not_exists(deletedAt)',
